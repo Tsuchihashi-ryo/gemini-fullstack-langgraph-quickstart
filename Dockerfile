@@ -63,8 +63,9 @@ RUN uv pip uninstall --system pip setuptools wheel && \
 WORKDIR /deps/backend
 
 # -- Cloud Run specific configuration --
-# Disable LangSmith tracing
+# Disable LangSmith tracing and set a default database URI
 ENV LANGCHAIN_TRACING_V2="false"
+ENV DATABASE_URI="sqlite:////tmp/langgraph.db"
 # Expose port and start the server
 EXPOSE 8080
 CMD ["langserve", "up", "--host", "0.0.0.0", "--port", "8080"]
