@@ -66,6 +66,7 @@ WORKDIR /deps/backend
 # Disable LangSmith tracing and set a default database URI
 ENV LANGCHAIN_TRACING_V2="false"
 ENV DATABASE_URI="sqlite:////tmp/langgraph.db"
+ENV REDIS_URI=""
 # Expose port and start the server
 EXPOSE 8080
 CMD ["langserve", "up", "--host", "0.0.0.0", "--port", "8080"]
