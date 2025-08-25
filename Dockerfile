@@ -54,4 +54,4 @@ EXPOSE 8080
 # Start the application using langserve as a python module
 # The host and port will be managed by Cloud Run's environment variables.
 # langserve by default listens on port 8080, which is what Cloud Run expects.
-CMD ["python", "-m", "langserve.cli", "up", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["python", "-m", "langserve", "up", "--host", "0.0.0.0", "--port", "8080"]
