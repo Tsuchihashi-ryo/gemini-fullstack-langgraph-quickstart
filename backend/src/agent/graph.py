@@ -1,7 +1,6 @@
 import os
 
 from agent.tools_and_schemas import SearchQueryList, Reflection
-from dotenv import load_dotenv
 from langchain_core.messages import AIMessage
 from langgraph.types import Send
 from langgraph.graph import StateGraph
@@ -32,7 +31,6 @@ from agent.utils import (
     resolve_urls,
 )
 
-load_dotenv()
 
 def print_current_credentials():
     """
@@ -47,11 +45,6 @@ def print_current_credentials():
     except google.auth.exceptions.DefaultCredentialsError:
         print("❌ Could not find default credentials. Please run 'gcloud auth application-default login'")
 
-#if os.getenv("GEMINI_API_KEY") is None:
-#    raise ValueError("GEMINI_API_KEY is not set")
-
-# Used for Google Search API
-#genai_client = Client(api_key=os.getenv("GEMINI_API_KEY"))
 print_current_credentials() # 現在の認証情報を表示
 genai_client = Client(vertexai=True, project="rd-simulation", location="us-east1")
 
@@ -81,7 +74,6 @@ def generate_query(state: OverallState, config: RunnableConfig) -> QueryGenerati
         model=configurable.query_generator_model,
         temperature=1.0,
         max_retries=2,
-        api_key=os.getenv("GEMINI_API_KEY"),
     )
     structured_llm = llm.with_structured_output(SearchQueryList)
 
@@ -183,7 +175,6 @@ def reflection(state: OverallState, config: RunnableConfig) -> ReflectionState:
         model=reasoning_model,
         temperature=1.0,
         max_retries=2,
-        api_key=os.getenv("GEMINI_API_KEY"),
     )
     result = llm.with_structured_output(Reflection).invoke(formatted_prompt)
 
@@ -262,7 +253,6 @@ def finalize_answer(state: OverallState, config: RunnableConfig):
         model=reasoning_model,
         temperature=0,
         max_retries=2,
-        api_key=os.getenv("GEMINI_API_KEY"),
     )
     result = llm.invoke(formatted_prompt)
 
