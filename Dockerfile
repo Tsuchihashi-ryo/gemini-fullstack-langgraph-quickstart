@@ -8,7 +8,7 @@ COPY frontend/package-lock.json ./
 RUN npm install
 
 COPY frontend/ ./
-RUN npm run build
+RUN NODE_ENV=production npm run build
 
 # Stage 2: Python Backend for Cloud Run
 FROM python:3.11-slim
