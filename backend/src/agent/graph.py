@@ -8,6 +8,7 @@ from langgraph.graph import StateGraph
 from langgraph.graph import START, END
 from langchain_core.runnables import RunnableConfig
 from google.genai import Client
+import google.auth
 
 from agent.state import (
     OverallState,
@@ -33,11 +34,26 @@ from agent.utils import (
 
 load_dotenv()
 
-if os.getenv("GEMINI_API_KEY") is None:
-    raise ValueError("GEMINI_API_KEY is not set")
+def print_current_credentials():
+    """
+    Prints the principal (user or service account) being used by ADC.
+    """
+    try:
+        credentials, project_id = google.auth.default()
+        if hasattr(credentials, 'service_account_email'):
+            print(f"✅ Authenticated using Service Account: {credentials.service_account_email}")
+        else:
+            print(f"✅ Authenticated using User Account: {credentials.signer_email}")
+    except google.auth.exceptions.DefaultCredentialsError:
+        print("❌ Could not find default credentials. Please run 'gcloud auth application-default login'")
+
+#if os.getenv("GEMINI_API_KEY") is None:
+#    raise ValueError("GEMINI_API_KEY is not set")
 
 # Used for Google Search API
-genai_client = Client(api_key=os.getenv("GEMINI_API_KEY"))
+#genai_client = Client(api_key=os.getenv("GEMINI_API_KEY"))
+print_current_credentials() # 現在の認証情報を表示
+genai_client = Client(vertexai=True, project="rd-simulation", location="us-east1")
 
 
 # Nodes
