@@ -24,7 +24,11 @@ add_routes(
 # Mount the frontend application
 # This assumes the frontend has been built and is located in ../frontend/dist
 app.mount(
-    "/",
+    "/app",
     create_frontend_router(),
     name="frontend",
 )
+
+@app.get("/")
+async def redirect_to_frontend():
+    return RedirectResponse(url="/app")
