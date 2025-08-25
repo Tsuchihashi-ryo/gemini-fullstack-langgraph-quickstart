@@ -25,6 +25,6 @@ add_routes(
 # This assumes the frontend has been built and is located in ../frontend/dist
 app.mount(
     "/",
-    create_frontend_router(build_dir="../../frontend/dist"),
+    create_frontend_router(),
     name="frontend",
 )
