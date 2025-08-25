@@ -38,6 +38,9 @@ COPY backend/ /app/backend
 # Copy built frontend from builder stage
 COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
 
+# Add pip's binary directory to PATH
+ENV PATH="/root/.local/bin:$PATH"
+
 # Environment variables for LangGraph
 ENV LANGGRAPH_HTTP='{"app": "/app/backend/src/agent/app.py:app"}'
 ENV LANGSERVE_GRAPHS='{"agent": "/app/backend/src/agent/graph.py:graph"}'
