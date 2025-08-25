@@ -1,13 +1,11 @@
 # Stage 1: Build React Frontend
 FROM node:20-alpine AS frontend-builder
 
-# Set working directory for frontend
 WORKDIR /app/frontend
 
 # Copy frontend package files and install dependencies
 COPY frontend/package.json ./
 COPY frontend/package-lock.json ./
-# If you use yarn or pnpm, adjust accordingly (e.g., copy yarn.lock or pnpm-lock.yaml and use yarn install or pnpm install)
 RUN npm install
 
 # Copy the rest of the frontend source code
@@ -16,48 +14,43 @@ COPY frontend/ ./
 # Build the frontend
 RUN npm run build
 
-# Stage 2: Python Backend
-FROM docker.io/langchain/langgraph-api:3.11
+# Stage 2: Python Backend for Cloud Run
+FROM python:3.11-slim
 
-# -- Install UV --
-# First install curl, then install UV using the standalone installer
-RUN apt-get update && apt-get install -y curl && \
-    curl -LsSf https://astral.sh/uv/install.sh | sh && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-ENV PATH="/root/.local/bin:$PATH"
-# -- End of UV installation --
+# Set working directory
+WORKDIR /app
 
-# -- Copy built frontend from builder stage --
-# The app.py expects the frontend build to be at ../frontend/dist relative to its own location.
-# If app.py is at /deps/backend/src/agent/app.py, then ../frontend/dist resolves to /deps/frontend/dist.
-COPY --from=frontend-builder /app/frontend/dist /deps/frontend/dist
-# -- End of copying built frontend --
+# Install uv for fast package installation
+RUN pip install uv
 
-# -- Adding local package . --
-ADD backend/ /deps/backend
-# -- End of local package . --
+# Copy frontend build from the first stage
+# The backend expects the frontend to be in ../frontend/dist relative to app.py
+COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
 
-# -- Installing all local dependencies using UV --
-# First, we need to ensure pip is available for UV to use
-RUN uv pip install --system pip setuptools wheel
-# Install dependencies with UV, respecting constraints
-RUN cd /deps/backend && \
-    PYTHONDONTWRITEBYTECODE=1 UV_SYSTEM_PYTHON=1 uv pip install --system -c /api/constraints.txt -e .
-# -- End of local dependencies install --
-ENV LANGGRAPH_HTTP='{"app": "/deps/backend/src/agent/app.py:app"}'
-ENV LANGSERVE_GRAPHS='{"agent": "/deps/backend/src/agent/graph.py:graph"}'
+# Copy backend code
+COPY backend/ /app/backend
 
-# -- Ensure user deps didn't inadvertently overwrite langgraph-api
-# Create all required directories that the langgraph-api package expects
-RUN mkdir -p /api/langgraph_api /api/langgraph_runtime /api/langgraph_license /api/langgraph_storage && \
-    touch /api/langgraph_api/__init__.py /api/langgraph_runtime/__init__.py /api/langgraph_license/__init__.py /api/langgraph_storage/__init__.py
-# Use pip for this specific package as it has poetry-based build requirements
-RUN PYTHONDONTWRITEBYTECODE=1 pip install --no-cache-dir --no-deps -e /api
-# -- End of ensuring user deps didn't inadvertently overwrite langgraph-api --
-# -- Removing pip from the final image (but keeping UV) --
-RUN uv pip uninstall --system pip setuptools wheel && \
-    rm -rf /usr/local/lib/python*/site-packages/pip* /usr/local/lib/python*/site-packages/setuptools* /usr/local/lib/python*/site-packages/wheel* && \
-    find /usr/local/bin -name "pip*" -delete
-# -- End of pip removal --
+# Install Python dependencies using uv
+# We install langgraph-cli[inmem] to use the in-memory backend,
+# suitable for stateless environments like Cloud Run.
+# We also install the backend package in editable mode.
+RUN uv pip install --system "langgraph-cli[inmem]" && \
+    uv pip install --system -e /app/backend
 
-WORKDIR /deps/backend
+# Cloud Run provides the PORT environment variable, which will be used by langgraph.
+# We expose 8080 as a default.
+EXPOSE 8080
+
+# Set the entrypoint to run the application using the langgraph CLI.
+# --host 0.0.0.0 makes it accessible from outside the container.
+# --port $PORT is not explicitly needed as langgraph up reads the PORT env var by default.
+# The app is defined in backend/src/agent/app.py and the graph in backend/src/agent/graph.py
+# The langgraph cli will discover these from the pyproject.toml config.
+ENV LANGGRAPH_HTTP='{"app": "agent.app:app"}'
+ENV LANGSERVE_GRAPHS='{"agent": "agent.graph:graph"}'
+ENV PYTHONUNBUFFERED=1
+
+# We need to set the PYTHONPATH to include the src directory
+ENV PYTHONPATH="/app/backend/src:${PYTHONPATH}"
+
+CMD ["langgraph", "up", "--host", "0.0.0.0", "--port", "8080"]
