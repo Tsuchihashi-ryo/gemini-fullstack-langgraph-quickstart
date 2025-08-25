@@ -20,6 +20,7 @@ RUN pip install --no-cache-dir \
     "uvicorn" \
     "langserve" \
     "sse-starlette" \
+    "typing-extensions" \
     "langgraph>=0.2.6" \
     "langchain>=0.3.19" \
     "langchain-google-genai" \
