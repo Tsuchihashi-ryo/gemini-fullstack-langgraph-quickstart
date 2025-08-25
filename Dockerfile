@@ -32,11 +32,11 @@ COPY backend/ /app/backend
 # Copy built frontend from builder stage
 COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
 
-# Set the python path to include the backend source
-ENV PYTHONPATH="/app/backend"
+# Set the python path to include the backend's 'src' directory
+ENV PYTHONPATH="/app/backend/src"
 
 # Expose port 8080 for Cloud Run
 EXPOSE 8080
 
-# Start the application using uvicorn
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Start the application using uvicorn, pointing to main.py
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]

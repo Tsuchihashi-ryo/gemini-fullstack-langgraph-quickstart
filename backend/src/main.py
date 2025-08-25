@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from langserve import add_routes
-from src.agent.graph import graph
-from src.agent.app import create_frontend_router
+from agent.graph import graph
+from agent.app import create_frontend_router
 
 # Create the main FastAPI app
 app = FastAPI(
