@@ -23,6 +23,7 @@ WORKDIR /app
 
 # Install dependencies
 RUN pip install --no-cache-dir \
+    "langserve" \
     "langgraph>=0.2.6" \
     "langchain>=0.3.19" \
     "langchain-google-genai" \
@@ -41,7 +42,8 @@ COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
 # Add pip's binary directory to PATH
 ENV PATH="/root/.local/bin:$PATH"
 
-# Environment variables for LangGraph
+# Add application source to PYTHONPATH and set up LangGraph variables
+ENV PYTHONPATH="/app/backend/src"
 ENV LANGGRAPH_HTTP='{"app": "/app/backend/src/agent/app.py:app"}'
 ENV LANGSERVE_GRAPHS='{"agent": "/app/backend/src/agent/graph.py:graph"}'
 ENV LANGCHAIN_TRACING_V2="false"
