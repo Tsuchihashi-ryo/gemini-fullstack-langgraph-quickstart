@@ -53,4 +53,5 @@ ENV PYTHONUNBUFFERED=1
 # We need to set the PYTHONPATH to include the src directory
 ENV PYTHONPATH="/app/backend/src:${PYTHONPATH}"
 
+WORKDIR /app/backend
 CMD ["langgraph", "up", "--port", "8080"]
