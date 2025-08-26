@@ -23,5 +23,6 @@ RUN npm install --prefix frontend
 # Expose ports for frontend (5173) and backend (8000) development servers
 EXPOSE 5173 8000
 
+
 # Set the default command to run the development server for both services
 CMD ["make", "dev"]
