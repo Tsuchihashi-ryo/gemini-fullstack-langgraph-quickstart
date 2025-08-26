@@ -6,7 +6,7 @@ WORKDIR /app
 COPY . .
 
 # Set the working directory in the container
-WORKDIR /app/backend
+WORKDIR ./backend
 
 # Install any needed packages specified in requirements.txt
 RUN pip install .
@@ -17,11 +17,11 @@ RUN pip install .
 FROM node:20-alpine AS frontend-builder
 
 # Set working directory for frontend
-WORKDIR /app/frontend
+WORKDIR ../frontend
 RUN npm install
 
 
-WORKDIR /app
+WORKDIR ..
 
 # Define environment variables (Cloud Runは自動でPORTを注入しますが、記述していても問題ありません)
 # ENV GOOGLE_CLOUD_PROJECT "rd-rag" # Cloud Runの環境変数として設定する方が一般的
