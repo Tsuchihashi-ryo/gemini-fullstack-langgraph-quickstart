@@ -1,11 +1,12 @@
 # Use an official Python runtime as a parent image
 FROM python:3.11-slim
 
+WORKDIR /app
+
+COPY . .
+
 # Set the working directory in the container
 WORKDIR /app/backend
-
-# Copy the dependencies file to the working directory
-COPY backend/ /app/backend
 
 # Install any needed packages specified in requirements.txt
 RUN pip install .
@@ -17,7 +18,6 @@ FROM node:20-alpine AS frontend-builder
 
 # Set working directory for frontend
 WORKDIR /app/frontend
-COPY frontend/ /app/frontend
 RUN npm install
 
 
