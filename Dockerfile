@@ -20,6 +20,9 @@ WORKDIR /app/frontend
 COPY frontend/ /app/frontend
 RUN npm install
 
+
+WORKDIR /app
+
 # Define environment variables (Cloud Runは自動でPORTを注入しますが、記述していても問題ありません)
 # ENV GOOGLE_CLOUD_PROJECT "rd-rag" # Cloud Runの環境変数として設定する方が一般的
 # ENV GOOGLE_CLOUD_REGION "us-central1" # 同上
